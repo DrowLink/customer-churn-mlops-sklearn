@@ -1,0 +1,41 @@
+{
+  "model_name": "b2b_churn_pipeline",
+  "version": "0.1.0",
+  "created_at_utc": "2026-08-28T05:41:01.808537+00:00",
+  "algorithm": "hist_gradient_boosting",
+  "best_threshold": 0.05,
+  "calibrated": true,
+  "input_features": [
+    "monthly_recurring_revenue",
+    "contract_duration_months",
+    "contracted_seats",
+    "active_users_last_30d",
+    "avg_daily_logins",
+    "feature_adoption_score",
+    "support_tickets_count",
+    "unresolved_tickets_count",
+    "nps_score",
+    "invoice_delay_days",
+    "storage_usage_pct",
+    "plan_tier",
+    "industry",
+    "company_size_bracket",
+    "billing_cycle",
+    "payment_method",
+    "auto_renew_enabled"
+  ],
+  "target_column": "churn",
+  "validation_metrics": {
+    "test_roc_auc": 0.793,
+    "test_brier_score": 0.1071,
+    "test_ece": 0.0145,
+    "max_projected_financial_benefit_usd": 42755290.24
+  },
+  "business_parameters": {
+    "intervention_cost_usd": 150.0,
+    "intervention_success_rate": 0.65,
+    "ltv_mrr_multiplier": 12.0,
+    "default_probability_threshold": 0.35
+  },
+  "pipeline_sha256": "de2b0d1ef2d0a7d582f9f755f291524f21597c89910a7cdedfe4b865d972f0fd"
+}

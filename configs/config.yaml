@@ -1,0 +1,82 @@
+project:
+  name: "customer-churn-mlops-sklearn"
+  version: "0.1.0"
+  random_state: 42
+
+data:
+  raw_data_path: "data/raw/synthetic_churn_data.csv"
+  processed_data_path: "data/processed/churn_features.parquet"
+  synthetic:
+    n_samples: 10000
+    churn_rate: 0.15  # Desbalance realista B2B SaaS (~15%)
+    noise_level: 0.05
+
+features:
+  id_column: "customer_id"
+  target_column: "churn"
+  
+  # Variables Numéricas Raw
+  numeric_features:
+    - "monthly_recurring_revenue"     # MRR en USD
+    - "contract_duration_months"       # Antigüedad del contrato
+    - "contracted_seats"              # Licencias compradas
+    - "active_users_last_30d"         # Usuarios activos último mes
+    - "avg_daily_logins"              # Promedio de logins diarios
+    - "feature_adoption_score"        # Score 0 a 100 de features usadas
+    - "support_tickets_count"         # Tickets creados últimos 90 días
+    - "unresolved_tickets_count"      # Tickets aún abiertos
+    - "nps_score"                     # Net Promoter Score (0-10)
+    - "invoice_delay_days"            # Días promedio de retraso en pago
+    - "storage_usage_pct"             # % de almacenamiento utilizado
+
+  # Variables Categóricas Nominales / Ordinales
+  categorical_features:
+    - "plan_tier"                     # Enterprise, Professional, Starter, Free-Trial
+    - "industry"                      # FinTech, HealthTech, E-commerce, EdTech, SaaS
+    - "company_size_bracket"          # 1-10, 11-50, 51-200, 201-1000, 1000+
+    - "billing_cycle"                 # Monthly, Annual, Multi-Year
+    - "payment_method"                # Credit_Card, Bank_Transfer, ACH
+    - "auto_renew_enabled"            # True, False
+
+  # Features calculadas por Transformadores Custom
+  derived_features:
+    - "seat_utilization_rate"         # active_users / contracted_seats
+    - "ticket_to_user_ratio"          # support_tickets / active_users
+    - "ticket_resolution_rate"        # 1 - (unresolved / support_tickets)
+    - "mrr_per_active_seat"           # MRR / active_users
+
+business_metrics:
+  # Costo de intervención proactiva del equipo de Customer Success por cliente en riesgo
+  intervention_cost_usd: 150.0
+  # % de clientes en riesgo que se salvan si se interviene a tiempo
+  intervention_success_rate: 0.65
+  # Multiplicador LTV esperado sobre el MRR mensual
+  ltv_mrr_multiplier: 12.0
+  # Umbral de probabilidad por defecto para accionar retención
+  default_probability_threshold: 0.35
+
+model_training:
+  test_size: 0.20
+  val_size: 0.15
+  cv_folds: 5
+  scoring_metric: "business_cost_benefit" # 'roc_auc', 'f1_weighted', 'business_cost_benefit'
+  
+  hist_gradient_boosting:
+    max_iter: 200
+    learning_rate: 0.05
+    max_leaf_nodes: 31
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    class_weight: "balanced"
+    
+  random_forest:
+    n_estimators: 150
+    max_depth: 12
+    min_samples_split: 5
+    min_samples_leaf: 2
+    class_weight: "balanced"
+    n_jobs: -1
+
+artifacts:
+  model_dir: "models/artifacts"
+  model_name: "b2b_churn_pipeline"
