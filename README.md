@@ -103,9 +103,66 @@ python -m pytest tests/ -v
 python main.py --config configs/config.yaml
 ```
 
+### 5. Launch the Production FastAPI Serving Microservice
+```bash
+python main.py --serve --port 8000
+```
+Interactive OpenAPI documentation will be accessible at:
+- **Swagger UI**: `http://127.0.0.1:8000/docs`
+- **ReDoc**: `http://127.0.0.1:8000/redoc`
+- **Healthcheck**: `http://127.0.0.1:8000/health`
+
 ---
 
-## 🔍 Real-Time Inference Example
+## 🌐 REST API Serving Endpoints
+
+### Single Account Scoring (`POST /v1/predict`)
+```bash
+curl -X POST http://127.0.0.1:8000/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "CUST-ENT-FIN-9921",
+    "industry": "FinTech",
+    "company_size_bracket": "51-200",
+    "plan_tier": "Enterprise",
+    "billing_cycle": "Monthly",
+    "payment_method": "Bank_Transfer",
+    "auto_renew_enabled": false,
+    "contract_duration_months": 5,
+    "contracted_seats": 100,
+    "active_users_last_30d": 18,
+    "monthly_recurring_revenue": 6250.0,
+    "avg_daily_logins": 7.0,
+    "feature_adoption_score": 24.5,
+    "storage_usage_pct": 72.0,
+    "support_tickets_count": 11,
+    "unresolved_tickets_count": 7,
+    "nps_score": 2.5,
+    "invoice_delay_days": 19.0
+  }'
+```
+
+### Vectorized Batch Scoring (`POST /v1/predict/batch`)
+```bash
+curl -X POST http://127.0.0.1:8000/v1/predict/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customers": [...],
+    "sort_by_risk": true
+  }'
+```
+
+---
+
+## 📋 Spec-Driven Development (Spec Kit)
+
+This repository follows the **Spec Kit** standard for version-controlled, spec-driven architecture:
+- **Constitution**: [constitution.md](.specify/memory/constitution.md) (Architecture boundaries, zero data leakage, and business ROI rules)
+- **Living Specifications**: [specs/](specs/) (Features, plans, acceptance criteria, and task checklists)
+
+---
+
+## 🔍 Python SDK Ingestion Example
 
 ```python
 from src.inference.predict import ChurnInferenceEngine
@@ -141,3 +198,4 @@ customer = {
 result = engine.predict_single(customer)
 print(result.model_dump_json(indent=2))
 ```
+
