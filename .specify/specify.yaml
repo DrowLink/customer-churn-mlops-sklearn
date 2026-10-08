@@ -1,0 +1,19 @@
+project:
+  name: "customer-churn-mlops-sklearn"
+  version: "0.1.0"
+  description: "Spec-Driven Development configuration for B2B SaaS Churn MLOps system"
+
+paths:
+  constitution: ".specify/memory/constitution.md"
+  templates:
+    spec: ".specify/templates/spec-template.md"
+    plan: ".specify/templates/plan-template.md"
+    tasks: ".specify/templates/tasks-template.md"
+  specs_dir: "specs"
+
+standards:
+  python_version: ">=3.10"
+  test_framework: "pytest"
+  linter: "ruff"
+  min_coverage_pct: 90
+  schema_validation: "pydantic"
