@@ -9,8 +9,8 @@
 
 | Phase | Description | Status |
 | :--- | :--- | :---: |
-| **Phase 1** | Dependency & Spec Kit Infrastructure | `IN_PROGRESS` |
-| **Phase 2** | Production FastAPI Serving Layer | `TODO` |
+| **Phase 1** | Dependency & Spec Kit Infrastructure | `COMPLETED` |
+| **Phase 2** | Production FastAPI Serving Layer | `COMPLETED` |
 | **Phase 3** | Data & Feature Drift Monitoring | `TODO` |
 | **Phase 4** | CI/CD, Docker & Developer Ergonomics | `TODO` |
 | **Phase 5** | End-to-End Testing & Verification | `TODO` |
@@ -23,18 +23,18 @@
 - [x] **Task 1.1**: Initialize `.specify` directory structure (`constitution.md`, templates, and `specify.yaml`).
   - *Files*: `.specify/memory/constitution.md`, `.specify/templates/*`, `.specify/specify.yaml`
   - *Verification*: Validate file existence and Spec Kit compliance.
-- [ ] **Task 1.2**: Update `pyproject.toml` with optional dependencies for API serving (`fastapi`, `uvicorn`, `httpx`).
+- [x] **Task 1.2**: Update `pyproject.toml` with optional dependencies for API serving (`fastapi`, `uvicorn`, `httpx`).
   - *Files*: `pyproject.toml`
   - *Verification*: Dependency resolution without conflicts.
 
 ### Phase 2: Production FastAPI Serving Layer
-- [ ] **Task 2.1**: Implement Pydantic API schemas with strict constraints and OpenAPI examples.
+- [x] **Task 2.1**: Implement Pydantic API schemas with strict constraints and OpenAPI examples.
   - *Files*: `src/api/schemas.py`
   - *Verification*: Type validation tests on boundary inputs.
-- [ ] **Task 2.2**: Implement FastAPI routes (`/health`, `/v1/predict`, `/v1/predict/batch`).
+- [x] **Task 2.2**: Implement FastAPI routes (`/health`, `/v1/predict`, `/v1/predict/batch`).
   - *Files*: `src/api/routes.py`, `src/api/app.py`
   - *Verification*: Verify routes using Starlette `TestClient`.
-- [ ] **Task 2.3**: Integrate SHA-256 model checksum verification in FastAPI startup lifespan.
+- [x] **Task 2.3**: Integrate SHA-256 model checksum verification in FastAPI startup lifespan.
   - *Files*: `src/api/app.py`
   - *Verification*: Verify server refusal to launch if checksum fails.
 

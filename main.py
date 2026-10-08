@@ -195,12 +195,41 @@ def run_pipeline(config_path: str = "configs/config.yaml") -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Customer Churn MLOps Pipeline Runner")
+    parser = argparse.ArgumentParser(description="Customer Churn MLOps Pipeline Runner & API Server")
     parser.add_argument(
         "--config",
         type=str,
         default="configs/config.yaml",
         help="Path to YAML configuration file",
     )
+    parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="Start the FastAPI REST inference microservice with Uvicorn",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host interface to bind API server (default: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port to bind API server (default: 8000)",
+    )
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Enable uvicorn auto-reload for local development",
+    )
     args = parser.parse_args()
-    run_pipeline(config_path=args.config)
+
+    if args.serve:
+        import uvicorn
+        logger.info("Starting FastAPI Churn Inference Microservice on http://%s:%d ...", args.host, args.port)
+        uvicorn.run("src.api.app:app", host=args.host, port=args.port, reload=args.reload)
+    else:
+        run_pipeline(config_path=args.config)
+

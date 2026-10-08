@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from typing import Any
+
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
@@ -45,7 +46,7 @@ def calculate_financial_evaluation(
 
     annual_ltv = mrr * ltv_multiplier
     expected_loss = prob * annual_ltv
-    
+
     if predicted_churn:
         intervention_budget = intervention_cost
         projected_benefit = max(0.0, (success_rate * annual_ltv) - intervention_cost)
@@ -66,12 +67,17 @@ def calculate_financial_evaluation(
     "/health",
     response_model=HealthResponse,
     summary="Healthcheck & Artifact Governance Status",
-    description="Returns service health, model version, algorithm, calibration flag, and SHA-256 checksum.",
+    description=(
+        "Returns service health, model version, algorithm, calibration flag, "
+        "and SHA-256 checksum."
+    ),
 )
-async def health_check(request: Request, engine: ChurnInferenceEngine = Depends(get_inference_engine)) -> HealthResponse:
+async def health_check(
+    request: Request, engine: ChurnInferenceEngine = Depends(get_inference_engine)
+) -> HealthResponse:
     uptime = time.time() - getattr(request.app.state, "start_time", time.time())
     meta = engine.metadata
-    
+
     return HealthResponse(
         status="healthy",
         model_name=meta.model_name if meta else "b2b_churn_pipeline",
@@ -89,7 +95,10 @@ async def health_check(request: Request, engine: ChurnInferenceEngine = Depends(
     "/v1/predict",
     response_model=SinglePredictionResponse,
     summary="Real-Time Single Customer Churn Prediction",
-    description="Evaluates a single customer account payload, returns calibrated churn probability, action guidance, and financial impact.",
+    description=(
+        "Evaluates a single customer account payload, returns calibrated churn "
+        "probability, action guidance, and financial impact."
+    ),
 )
 async def predict_single(
     payload: CustomerInferenceRequest,
@@ -97,7 +106,7 @@ async def predict_single(
 ) -> SinglePredictionResponse:
     # 1. Run inference through engine
     result = engine.predict_single(payload.model_dump())
-    
+
     # 2. Compute financial evaluation
     biz_params = engine.metadata.business_parameters if engine.metadata else None
     predicted_bool = bool(result.churn_prediction == 1)
@@ -124,7 +133,10 @@ async def predict_single(
     "/v1/predict/batch",
     response_model=BatchPredictionResponse,
     summary="Vectorized Batch Churn Prediction",
-    description="Scores a collection of customer accounts in a vectorized fashion and provides aggregated financial risk summaries.",
+    description=(
+        "Scores a collection of customer accounts in a vectorized fashion "
+        "and provides aggregated financial risk summaries."
+    ),
 )
 async def predict_batch(
     payload: BatchPredictionRequest,

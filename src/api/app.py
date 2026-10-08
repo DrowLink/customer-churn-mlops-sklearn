@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 import os
 import time
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,14 +35,8 @@ def create_app(
     Returns:
         FastAPI: Fully configured ASGI application.
     """
-    pipe_path = Path(
-        pipeline_path
-        or os.getenv("CHURN_PIPELINE_PATH", DEFAULT_PIPELINE_PATH)
-    )
-    meta_path = Path(
-        metadata_path
-        or os.getenv("CHURN_METADATA_PATH", DEFAULT_METADATA_PATH)
-    )
+    pipe_path = Path(pipeline_path or os.getenv("CHURN_PIPELINE_PATH", DEFAULT_PIPELINE_PATH))
+    meta_path = Path(metadata_path or os.getenv("CHURN_METADATA_PATH", DEFAULT_METADATA_PATH))
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -58,13 +52,15 @@ def create_app(
                     pipeline_path=pipe_path,
                     metadata_path=meta_path if meta_path.exists() else None,
                 )
-                
+
                 # Checksum verification
                 if engine.metadata and engine.metadata.pipeline_sha256:
                     actual_hash = compute_file_sha256(pipe_path)
                     if actual_hash == engine.metadata.pipeline_sha256:
                         app.state.checksum_verified = True
-                        logger.info("Artifact SHA-256 integrity verified successfully: %s", actual_hash[:16])
+                        logger.info(
+                            "Artifact SHA-256 integrity verified successfully: %s", actual_hash[:16]
+                        )
                     else:
                         logger.error(
                             "CRITICAL: Artifact checksum mismatch! Expected %s, got %s",
