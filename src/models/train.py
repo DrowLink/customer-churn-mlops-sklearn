@@ -25,7 +25,8 @@ from sklearn.metrics import (
     f1_score,
 )
 
-from src.models.metrics import create_business_scorer, b2b_churn_net_financial_benefit
+from src.models.metrics import b2b_churn_net_financial_benefit, create_business_scorer
+from src.monitoring.drift import extract_baseline_summary
 from src.pipelines.builder import build_b2b_preprocessor, build_full_churn_pipeline
 
 logger = logging.getLogger(__name__)
@@ -199,10 +200,17 @@ def train_and_compare_models(
     )
     logger.info(">> Selected Champion Model: %s", best_model_name)
 
+    baseline_summary = extract_baseline_summary(
+        df=X_train,
+        numeric_features=numeric_features,
+        categorical_features=categorical_features,
+    )
+
     return {
         "best_model_name": best_model_name,
         "champion_pipeline": comparison_results[best_model_name]["best_pipeline"],
         "comparison_results": comparison_results,
+        "baseline_summary": baseline_summary,
         "data_splits": {
             "X_train": X_train,
             "X_test": X_test,

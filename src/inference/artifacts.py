@@ -35,6 +35,7 @@ class ModelArtifactMetadata(BaseModel):
     target_column: str = "churn"
     validation_metrics: dict[str, float] = Field(default_factory=dict)
     business_parameters: dict[str, Any] = Field(default_factory=dict)
+    baseline_statistics: dict[str, Any] = Field(default_factory=dict)
     pipeline_sha256: str = ""
 
 
