@@ -1,8 +1,9 @@
 """Tests para métricas de negocio, optimización de thresholds y calibración."""
 
 import numpy as np
+
 from src.evaluation.calibration import evaluate_calibration, find_optimal_decision_threshold
-from src.models.metrics import b2b_churn_net_financial_benefit, create_business_scorer
+from src.models.metrics import b2b_churn_net_financial_benefit
 
 
 def test_b2b_churn_net_financial_benefit_calculation():

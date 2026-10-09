@@ -1,4 +1,5 @@
 """Inference package init."""
+
 from src.inference.artifacts import (
     ModelArtifactMetadata,
     load_model_artifact,

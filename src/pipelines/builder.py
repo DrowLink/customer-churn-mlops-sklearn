@@ -12,7 +12,8 @@ Builds a leak-free preprocessor that:
 from __future__ import annotations
 
 import logging
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -57,7 +58,11 @@ def build_b2b_preprocessor(
         categorical_target_encode_features = []
 
     if log_features is None:
-        log_features = ["monthly_recurring_revenue", "contract_duration_months", "support_tickets_count"]
+        log_features = [
+            "monthly_recurring_revenue",
+            "contract_duration_months",
+            "support_tickets_count",
+        ]
 
     # 1. Numeric Pipeline
     num_steps: list[tuple[str, Any]] = [
@@ -70,9 +75,7 @@ def build_b2b_preprocessor(
         )
 
     if apply_log_transform:
-        num_steps.append(
-            ("log1p", SafeLog1pTransformer(columns=log_features))
-        )
+        num_steps.append(("log1p", SafeLog1pTransformer(columns=log_features)))
 
     if scaler_type == "robust":
         num_steps.append(("scaler", RobustScaler()))

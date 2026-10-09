@@ -68,8 +68,7 @@ def calculate_financial_evaluation(
     response_model=HealthResponse,
     summary="Healthcheck & Artifact Governance Status",
     description=(
-        "Returns service health, model version, algorithm, calibration flag, "
-        "and SHA-256 checksum."
+        "Returns service health, model version, algorithm, calibration flag, and SHA-256 checksum."
     ),
 )
 async def health_check(

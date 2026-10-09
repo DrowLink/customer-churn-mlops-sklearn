@@ -2,11 +2,11 @@
 
 In B2B SaaS, classification errors have asymmetric financial costs:
 - False Negative (FN): Missing a churning customer leads to the total loss of customer LTV.
-- False Positive (FP): Falsely flagging a healthy account wastes proactive Customer Success intervention cost ($150).
-- True Positive (TP): Retaining an at-risk customer recovers LTV (scaled by intervention success rate) minus intervention cost.
+- False Positive (FP): Wastes Customer Success intervention cost ($150).
+- True Positive (TP): Recovers LTV (scaled by success rate) minus intervention cost.
 - True Negative (TN): Zero additional cost.
 
-This module provides the Net Financial Benefit metric and exposes a Scikit-Learn scorer via `make_scorer`.
+This module provides the Net Financial Benefit metric and exposes a Scikit-Learn scorer.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ def b2b_churn_net_financial_benefit(
         y_pred (np.ndarray | list[int]): Model binary predictions based on decision threshold.
         sample_weight (np.ndarray | None): Individual customer LTV values.
         intervention_cost (float): Fixed cost per proactive retention campaign.
-        intervention_success_rate (float): Probability of successfully retaining a churning customer.
+        intervention_success_rate (float): Success probability of retention.
         average_mrr_ltv (float): Fallback average LTV when sample_weight is not provided.
 
     Returns:
@@ -59,9 +59,7 @@ def b2b_churn_net_financial_benefit(
     fn_mask = (y_true_arr == 1) & (y_pred_arr == 0)
 
     # 1. Net gain from True Positives
-    tp_saved_value = np.sum(
-        (intervention_success_rate * ltv_values[tp_mask]) - intervention_cost
-    )
+    tp_saved_value = np.sum((intervention_success_rate * ltv_values[tp_mask]) - intervention_cost)
 
     # 2. Wasted spend from False Positives
     fp_wasted_cost = float(np.sum(fp_mask) * intervention_cost)
@@ -81,7 +79,7 @@ def create_business_scorer(
     """Creates a Scikit-Learn compliant Scorer using `make_scorer`.
 
     Returns:
-        _BaseScorer: Scorer object for GridSearchCV / HalvingRandomSearchCV with `greater_is_better=True`.
+        _BaseScorer: Scorer object for GridSearchCV / HalvingRandomSearchCV.
     """
     return make_scorer(
         score_func=b2b_churn_net_financial_benefit,

@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from src.inference.artifacts import ModelArtifactMetadata, load_model_artifact
+from src.inference.artifacts import load_model_artifact
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,9 @@ class CustomerChurnInputSchema(BaseModel):
     """Input data contract for single-customer real-time inference."""
 
     customer_id: str = "CUST-ONLINE-001"
-    industry: Literal["FinTech", "HealthTech", "E-commerce", "EdTech", "Enterprise SaaS", "Logistics"]
+    industry: Literal[
+        "FinTech", "HealthTech", "E-commerce", "EdTech", "Enterprise SaaS", "Logistics"
+    ]
     company_size_bracket: Literal["1-10", "11-50", "51-200", "201-1000", "1000+"]
     plan_tier: Literal["Starter", "Professional", "Enterprise"]
     billing_cycle: Literal["Monthly", "Annual", "Multi-Year"]
@@ -72,17 +74,19 @@ class ChurnInferenceEngine:
             self.threshold = self.metadata.best_threshold
         else:
             self.threshold = 0.5
-            
+
         logger.info("Inference Engine initialized. Active decision threshold: %.3f", self.threshold)
 
-    def predict_single(self, customer_input: CustomerChurnInputSchema | dict[str, Any]) -> ChurnPredictionOutput:
+    def predict_single(
+        self, customer_input: CustomerChurnInputSchema | dict[str, Any]
+    ) -> ChurnPredictionOutput:
         """Executes real-time inference for a single customer payload.
 
         Args:
             customer_input (CustomerChurnInputSchema | dict[str, Any]): Customer metrics.
 
         Returns:
-            ChurnPredictionOutput: Structured prediction with risk tier and suggested retention action.
+            ChurnPredictionOutput: Structured prediction with risk tier and suggested action.
         """
         if isinstance(customer_input, dict):
             validated_input = CustomerChurnInputSchema(**customer_input)

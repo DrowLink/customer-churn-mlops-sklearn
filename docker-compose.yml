@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  churn-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: churn_mlops_api
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    volumes:
+      - ./models:/app/models
+      - ./reports:/app/reports
+    restart: unless-stopped
+
+  churn-train:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: churn_mlops_trainer
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./reports:/app/reports
+    command: ["--config", "configs/config.yaml"]
+    profiles:
+      - train

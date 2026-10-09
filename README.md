@@ -8,34 +8,43 @@ Production-grade Machine Learning and MLOps system in Python for early Churn pre
 
 ```
 customer-churn-mlops-sklearn/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                      # Automated CI: lint, format, pytest, coverage
+├── .specify/                           # Spec Kit (Spec-Driven Development)
+│   ├── memory/constitution.md          # Architectural laws, boundaries, and ROI rules
+│   └── templates/                      # Standardized SDD templates
 ├── configs/
 │   └── config.yaml                     # Feature definitions, HPO spaces, and financial parameters
 ├── src/
+│   ├── api/                            # Production FastAPI serving microservice
+│   │   ├── app.py                      # App lifespan, SHA-256 verification, OpenAPI docs
+│   │   ├── routes.py                   # /health, /v1/predict, /v1/predict/batch
+│   │   └── schemas.py                  # Pydantic v2 schemas and validation
 │   ├── data/
-│   │   └── generator.py                # Realistic B2B synthetic data generator (engagement, billing, MRR)
+│   │   └── generator.py                # Realistic B2B synthetic data generator
 │   ├── features/
-│   │   └── custom_transformers.py      # Safe transformers (BaseEstimator/TransformerMixin)
+│   │   └── custom_transformers.py      # Safe leak-free transformers
 │   ├── pipelines/
 │   │   └── builder.py                  # ColumnTransformer & Pipeline assembler
 │   ├── models/
-│   │   ├── train.py                    # Comparative HPO training (HalvingRandomSearchCV / StratifiedKFold)
+│   │   ├── train.py                    # Comparative HPO training & baseline profiling
 │   │   └── metrics.py                  # Custom Business Scorer (make_scorer, Cost vs MRR)
 │   ├── evaluation/
 │   │   ├── calibration.py              # CalibratedClassifierCV & Dynamic Threshold Optimization
 │   │   └── explainability.py           # Model-agnostic Permutation Importance
+│   ├── monitoring/                     # Data & feature drift monitoring
+│   │   └── drift.py                    # Population Stability Index (PSI) & KS-test
 │   └── inference/
-│       ├── artifacts.py                # Joblib serialization, SHA-256 Checksums, and Pydantic metadata
-│       └── predict.py                  # Real-time Online (Pydantic) & Batch (Parquet/CSV) inference engine
-├── tests/                              # Comprehensive unit test suite with pytest
-│   ├── conftest.py
-│   ├── test_generator.py
-│   ├── test_transformers.py
-│   ├── test_pipeline.py
-│   ├── test_metrics.py
-│   └── test_inference.py
-├── pyproject.toml                      # Package specifications, dependencies, and linters (ruff)
-├── main.py                             # End-to-end CLI orchestrator
-└── README.md
+│       ├── artifacts.py                # Joblib serialization, SHA-256 Checksums, and metadata
+│       └── predict.py                  # Real-time Online & Batch inference engine
+├── tests/                              # Comprehensive test suite (91% coverage)
+├── Dockerfile                          # Multi-stage production container
+├── docker-compose.yml                  # Local orchestration for API & Training
+├── Makefile                            # Standardized developer workflows
+├── run.ps1                             # Windows PowerShell automation
+├── main.py                             # End-to-end CLI orchestrator (--serve, --evaluate-drift)
+└── pyproject.toml                      # Package specifications, dependencies, and linters
 ```
 
 ---
@@ -170,7 +179,7 @@ from src.inference.predict import ChurnInferenceEngine
 # Load the inference engine with the latest calibrated model
 engine = ChurnInferenceEngine(
     pipeline_path="models/artifacts/b2b_churn_pipeline_latest.joblib",
-    metadata_path="models/artifacts/b2b_churn_pipeline_latest_metadata.json"
+    metadata_path="models/artifacts/b2b_churn_pipeline_latest_metadata.json",
 )
 
 # Example customer payload
@@ -198,4 +207,54 @@ customer = {
 result = engine.predict_single(customer)
 print(result.model_dump_json(indent=2))
 ```
+
+---
+
+## 📊 Data & Feature Drift Monitoring
+
+Detect distribution shifts before they degrade inference accuracy:
+- **Population Stability Index (PSI)**: Quantifies shift against training baseline (`PSI < 0.1` Stable, `0.1 <= PSI < 0.25` Warning, `PSI >= 0.25` Drift Detected).
+- **Kolmogorov-Smirnov (KS) Test**: Two-sample test evaluating numeric feature distributions.
+
+Run the drift auditor CLI:
+```bash
+# Evaluate drift on current inference batch or simulated shift
+python main.py --evaluate-drift
+
+# Or provide a custom batch file:
+python main.py --evaluate-drift --input data/production_batch.csv
+```
+Reports are persisted to `reports/drift/drift_report_<timestamp>.json`.
+
+---
+
+## 🐳 Containerization & Deployment
+
+Build and run using the optimized multi-stage `Dockerfile`:
+```bash
+# Build production container image
+docker build -t customer-churn-mlops:latest .
+
+# Run inference service on port 8000
+docker run -p 8000:8000 -v ./models:/app/models customer-churn-mlops:latest
+
+# Or launch via Docker Compose:
+docker-compose up -d churn-api
+```
+
+---
+
+## 🛠️ Developer Ergonomics (Makefile & PowerShell)
+
+| Action | Linux / macOS (`make`) | Windows PowerShell (`run.ps1`) |
+| :--- | :--- | :--- |
+| **Install Dependencies** | `make install` | `.\run.ps1 install` |
+| **Lint Code** | `make lint` | `.\run.ps1 lint` |
+| **Format Code** | `make format` | `.\run.ps1 format` |
+| **Run Tests** | `make test` | `.\run.ps1 test` |
+| **Test Coverage** | `make cov` | `.\run.ps1 cov` |
+| **Train Pipeline** | `make train` | `.\run.ps1 train` |
+| **Start API** | `make serve` | `.\run.ps1 serve` |
+| **Audit Drift** | `make drift` | `.\run.ps1 drift` |
+
 

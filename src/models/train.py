@@ -13,19 +13,17 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.experimental import enable_halving_search_cv  # noqa: F401
-from sklearn.model_selection import HalvingRandomSearchCV, StratifiedKFold, train_test_split
 from sklearn.metrics import (
-    classification_report,
-    roc_auc_score,
     average_precision_score,
     f1_score,
+    roc_auc_score,
 )
+from sklearn.model_selection import HalvingRandomSearchCV, StratifiedKFold, train_test_split
 
-from src.models.metrics import b2b_churn_net_financial_benefit, create_business_scorer
+from src.models.metrics import b2b_churn_net_financial_benefit
 from src.monitoring.drift import extract_baseline_summary
 from src.pipelines.builder import build_b2b_preprocessor, build_full_churn_pipeline
 
@@ -62,7 +60,7 @@ def train_and_compare_models(
         dict[str, Any]: Benchmark results, champion pipeline, and data splits.
     """
     logger.info("Initializing Stratified Train/Test split (test_size=%.2f)...", test_size)
-    
+
     X = df.drop(columns=[target_col, "customer_id"], errors="ignore")
     y = df[target_col].values
     mrr_series = df["monthly_recurring_revenue"].values
@@ -74,13 +72,6 @@ def train_and_compare_models(
         test_size=test_size,
         stratify=y,
         random_state=random_state,
-    )
-
-    avg_ltv = float(np.mean(mrr_train) * business_ltv_multiplier)
-    business_scorer = create_business_scorer(
-        intervention_cost=business_intervention_cost,
-        intervention_success_rate=business_intervention_success_rate,
-        average_mrr_ltv=avg_ltv,
     )
 
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
@@ -119,7 +110,7 @@ def train_and_compare_models(
 
     for model_name, cfg in models_config.items():
         logger.info("Training and tuning candidate model: %s...", model_name)
-        
+
         preprocessor = build_b2b_preprocessor(
             numeric_features=numeric_features,
             categorical_ohe_features=categorical_features,
@@ -131,6 +122,7 @@ def train_and_compare_models(
 
         if use_halving_search:
             import warnings
+
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning)
                 search = HalvingRandomSearchCV(
@@ -161,7 +153,7 @@ def train_and_compare_models(
         roc_auc = float(roc_auc_score(y_test, y_test_probs))
         pr_auc = float(average_precision_score(y_test, y_test_probs))
         f1 = float(f1_score(y_test, y_test_preds, zero_division=0))
-        
+
         # Test financial return
         net_financial_benefit = float(
             b2b_churn_net_financial_benefit(

@@ -37,7 +37,7 @@ def compute_permutation_importance(
         n_jobs (int): CPU parallelism.
 
     Returns:
-        pd.DataFrame: DataFrame sorted by `importance_mean` descending with means and standard deviations.
+        pd.DataFrame: DataFrame sorted by `importance_mean` descending.
     """
     logger.info(
         "Computing Permutation Importance (n_repeats=%d, scoring='%s')...",
@@ -62,13 +62,17 @@ def compute_permutation_importance(
     else:
         feature_names = [f"feature_{i}" for i in range(X_eval.shape[1])]
 
-    df_importance = pd.DataFrame(
-        {
-            "feature": feature_names,
-            "importance_mean": perm_result.importances_mean,
-            "importance_std": perm_result.importances_std,
-        }
-    ).sort_values(by="importance_mean", ascending=False).reset_index(drop=True)
+    df_importance = (
+        pd.DataFrame(
+            {
+                "feature": feature_names,
+                "importance_mean": perm_result.importances_mean,
+                "importance_std": perm_result.importances_std,
+            }
+        )
+        .sort_values(by="importance_mean", ascending=False)
+        .reset_index(drop=True)
+    )
 
     return df_importance
 
@@ -79,7 +83,8 @@ def get_top_features_summary(df_importance: pd.DataFrame, top_n: int = 10) -> st
     lines = [f"{'Rank':<5} | {'Feature':<30} | {'Importance (Mean ± Std)':<25}"]
     lines.append("-" * 65)
     for idx, row in top_df.iterrows():
-        lines.append(
-            f"{idx + 1:<5} | {row['feature']:<30} | {row['importance_mean']:>8.4f} ± {row['importance_std']:<8.4f}"
-        )
+        feat = row["feature"]
+        imp_m = row["importance_mean"]
+        imp_s = row["importance_std"]
+        lines.append(f"{idx + 1:<5} | {feat:<30} | {imp_m:>8.4f} ± {imp_s:<8.4f}")
     return "\n".join(lines)

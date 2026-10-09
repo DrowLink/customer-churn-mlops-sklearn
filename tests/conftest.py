@@ -1,8 +1,8 @@
 """Fixtures comunes y datasets para tests unitarios y de integración."""
 
-import pytest
 import pandas as pd
-import numpy as np
+import pytest
+
 from src.data.generator import generate_synthetic_b2b_churn_data
 
 

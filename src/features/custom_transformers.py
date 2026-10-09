@@ -1,13 +1,14 @@
 """Custom Scikit-Learn Transformers for Feature Engineering and Leak-Free Preprocessing.
 
-Implements classes conforming to Scikit-Learn's estimator protocol (`BaseEstimator`, `TransformerMixin`)
-to ensure seamless integration within a `Pipeline` or `ColumnTransformer` without Data Leakage.
+Implements classes conforming to Scikit-Learn's estimator protocol
+(`BaseEstimator`, `TransformerMixin`) without Data Leakage.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -77,10 +78,10 @@ class B2BRatioFeatureGenerator(BaseEstimator, TransformerMixin):
             pd.DataFrame: Dataframe with appended ratio features.
         """
         check_is_fitted(self, ["required_cols_", "feature_names_in_"])
-        
+
         if not isinstance(X, pd.DataFrame):
             raise TypeError(
-                f"B2BRatioFeatureGenerator requires a pandas DataFrame in transform, received: {type(X)}"
+                f"B2BRatioFeatureGenerator requires a pandas DataFrame, received: {type(X)}"
             )
 
         X_out = X.copy()
@@ -116,7 +117,9 @@ class B2BRatioFeatureGenerator(BaseEstimator, TransformerMixin):
     def get_feature_names_out(self, input_features: Sequence[str] | None = None) -> np.ndarray:
         """Returns output feature names."""
         check_is_fitted(self, ["feature_names_in_"])
-        base_features = list(input_features if input_features is not None else self.feature_names_in_)
+        base_features = list(
+            input_features if input_features is not None else self.feature_names_in_
+        )
         new_features = [
             "seat_utilization_rate",
             "unresolved_tickets_ratio",

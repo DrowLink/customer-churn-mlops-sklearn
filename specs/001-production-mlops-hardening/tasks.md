@@ -11,9 +11,9 @@
 | :--- | :--- | :---: |
 | **Phase 1** | Dependency & Spec Kit Infrastructure | `COMPLETED` |
 | **Phase 2** | Production FastAPI Serving Layer | `COMPLETED` |
-| **Phase 3** | Data & Feature Drift Monitoring | `TODO` |
-| **Phase 4** | CI/CD, Docker & Developer Ergonomics | `TODO` |
-| **Phase 5** | End-to-End Testing & Verification | `TODO` |
+| **Phase 3** | Data & Feature Drift Monitoring | `COMPLETED` |
+| **Phase 4** | CI/CD, Docker & Developer Ergonomics | `COMPLETED` |
+| **Phase 5** | End-to-End Testing & Verification | `COMPLETED` |
 
 ---
 
@@ -39,28 +39,28 @@
   - *Verification*: Verify server refusal to launch if checksum fails.
 
 ### Phase 3: Data & Feature Drift Monitoring
-- [ ] **Task 3.1**: Create `DriftMonitor` module calculating PSI (Population Stability Index) and Kolmogorov-Smirnov statistics.
+- [x] **Task 3.1**: Create `DriftMonitor` module calculating PSI (Population Stability Index) and Kolmogorov-Smirnov statistics.
   - *Files*: `src/monitoring/drift.py`
   - *Verification*: Unit tests verifying PSI < 0.1 for identical distributions and PSI > 0.25 for shifted data.
-- [ ] **Task 3.2**: Add baseline summary extraction to training pipeline so reference statistics are stored alongside model metadata.
+- [x] **Task 3.2**: Add baseline summary extraction to training pipeline so reference statistics are stored alongside model metadata.
   - *Files*: `src/models/train.py`, `main.py`
   - *Verification*: Baseline feature distributions saved in artifact metadata.
 
 ### Phase 4: CI/CD, Containerization & Developer Ergonomics
-- [ ] **Task 4.1**: Create multi-stage `Dockerfile` and `docker-compose.yml` for serving and training.
+- [x] **Task 4.1**: Create multi-stage `Dockerfile` and `docker-compose.yml` for serving and training.
   - *Files*: `Dockerfile`, `docker-compose.yml`, `.dockerignore`
   - *Verification*: Docker linting and clean build.
-- [ ] **Task 4.2**: Create GitHub Actions CI workflow for automated linting, test suite, and coverage.
+- [x] **Task 4.2**: Create GitHub Actions CI workflow for automated linting, test suite, and coverage.
   - *Files*: `.github/workflows/ci.yml`
   - *Verification*: Action syntax verification.
-- [ ] **Task 4.3**: Create `Makefile` and `run.ps1` for standardized developer workflows (`make test`, `make lint`, `make serve`).
+- [x] **Task 4.3**: Create `Makefile` and `run.ps1` for standardized developer workflows (`make test`, `make lint`, `make serve`).
   - *Files*: `Makefile`, `run.ps1`
   - *Verification*: Execute commands locally.
 
 ### Phase 5: Testing, Hardening & Final Documentation
-- [ ] **Task 5.1**: Implement comprehensive tests for API endpoints (`tests/test_api.py`) and drift monitoring (`tests/test_drift.py`).
-  - *Files*: `tests/test_api.py`, `tests/test_drift.py`
-  - *Verification*: `pytest` runs and passes 100% of tests.
-- [ ] **Task 5.2**: Update root `README.md` with API usage instructions, Docker instructions, and Spec Kit documentation.
+- [x] **Task 5.1**: Implement comprehensive tests for API endpoints (`tests/test_api.py`) and drift monitoring (`tests/test_drift.py`).
+  - *Files*: `tests/test_api.py`, `tests/test_drift.py`, `tests/test_train_and_explainability.py`
+  - *Verification*: `pytest` runs and passes 100% of tests with >= 90% coverage.
+- [x] **Task 5.2**: Update root `README.md` with API usage instructions, Docker instructions, and Spec Kit documentation.
   - *Files*: `README.md`
   - *Verification*: Markdown links and instructions validated.

@@ -103,7 +103,7 @@ def compute_categorical_psi(
     if len(ref_s) == 0 or len(curr_s) == 0:
         return 0.0
 
-    all_categories = sorted(list(set(ref_s.unique()) | set(curr_s.unique())))
+    all_categories = sorted(set(ref_s.unique()) | set(curr_s.unique()))
     n_categories = len(all_categories)
     if n_categories == 0:
         return 0.0

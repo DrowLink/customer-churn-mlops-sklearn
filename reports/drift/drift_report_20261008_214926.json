@@ -1,0 +1,168 @@
+{
+  "timestamp_utc": "2026-10-09T01:49:26.964426+00:00",
+  "n_reference_samples": 10000,
+  "n_current_samples": 800,
+  "is_dataset_drifted": true,
+  "drifted_features_count": 3,
+  "total_features_evaluated": 17,
+  "drifted_features": [
+    "support_tickets_count",
+    "nps_score",
+    "invoice_delay_days"
+  ],
+  "feature_metrics": {
+    "monthly_recurring_revenue": {
+      "feature_name": "monthly_recurring_revenue",
+      "feature_type": "numeric",
+      "psi": 0.0075,
+      "ks_statistic": 0.0309,
+      "ks_pvalue": 0.4702,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "contract_duration_months": {
+      "feature_name": "contract_duration_months",
+      "feature_type": "numeric",
+      "psi": 0.0118,
+      "ks_statistic": 0.0398,
+      "ks_pvalue": 0.1853,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "contracted_seats": {
+      "feature_name": "contracted_seats",
+      "feature_type": "numeric",
+      "psi": 0.0076,
+      "ks_statistic": 0.0262,
+      "ks_pvalue": 0.6774,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "active_users_last_30d": {
+      "feature_name": "active_users_last_30d",
+      "feature_type": "numeric",
+      "psi": 0.0139,
+      "ks_statistic": 0.026,
+      "ks_pvalue": 0.6888,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "avg_daily_logins": {
+      "feature_name": "avg_daily_logins",
+      "feature_type": "numeric",
+      "psi": 0.0087,
+      "ks_statistic": 0.0269,
+      "ks_pvalue": 0.6453,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "feature_adoption_score": {
+      "feature_name": "feature_adoption_score",
+      "feature_type": "numeric",
+      "psi": 0.0174,
+      "ks_statistic": 0.0427,
+      "ks_pvalue": 0.1306,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "support_tickets_count": {
+      "feature_name": "support_tickets_count",
+      "feature_type": "numeric",
+      "psi": 12.9455,
+      "ks_statistic": 0.861,
+      "ks_pvalue": 0.0,
+      "drift_level": "DRIFT_DETECTED",
+      "has_drift": true
+    },
+    "unresolved_tickets_count": {
+      "feature_name": "unresolved_tickets_count",
+      "feature_type": "numeric",
+      "psi": 0.0002,
+      "ks_statistic": 0.0111,
+      "ks_pvalue": 1.0,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "nps_score": {
+      "feature_name": "nps_score",
+      "feature_type": "numeric",
+      "psi": 7.6127,
+      "ks_statistic": 0.5801,
+      "ks_pvalue": 0.0,
+      "drift_level": "DRIFT_DETECTED",
+      "has_drift": true
+    },
+    "invoice_delay_days": {
+      "feature_name": "invoice_delay_days",
+      "feature_type": "numeric",
+      "psi": 0.2657,
+      "ks_statistic": 0.191,
+      "ks_pvalue": 0.0,
+      "drift_level": "DRIFT_DETECTED",
+      "has_drift": true
+    },
+    "storage_usage_pct": {
+      "feature_name": "storage_usage_pct",
+      "feature_type": "numeric",
+      "psi": 0.016,
+      "ks_statistic": 0.0475,
+      "ks_pvalue": 0.0755,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "plan_tier": {
+      "feature_name": "plan_tier",
+      "feature_type": "categorical",
+      "psi": 0.0005,
+      "ks_statistic": null,
+      "ks_pvalue": null,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "industry": {
+      "feature_name": "industry",
+      "feature_type": "categorical",
+      "psi": 0.0074,
+      "ks_statistic": null,
+      "ks_pvalue": null,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "company_size_bracket": {
+      "feature_name": "company_size_bracket",
+      "feature_type": "categorical",
+      "psi": 0.0039,
+      "ks_statistic": null,
+      "ks_pvalue": null,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "billing_cycle": {
+      "feature_name": "billing_cycle",
+      "feature_type": "categorical",
+      "psi": 0.0034,
+      "ks_statistic": null,
+      "ks_pvalue": null,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "payment_method": {
+      "feature_name": "payment_method",
+      "feature_type": "categorical",
+      "psi": 0.003,
+      "ks_statistic": null,
+      "ks_pvalue": null,
+      "drift_level": "STABLE",
+      "has_drift": false
+    },
+    "auto_renew_enabled": {
+      "feature_name": "auto_renew_enabled",
+      "feature_type": "categorical",
+      "psi": 0.0001,
+      "ks_statistic": null,
+      "ks_pvalue": null,
+      "drift_level": "STABLE",
+      "has_drift": false
+    }
+  }
+}

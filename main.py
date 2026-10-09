@@ -18,9 +18,10 @@ import logging
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import yaml
-from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.metrics import roc_auc_score
 
 from src.data.generator import generate_synthetic_b2b_churn_data
 from src.evaluation.calibration import (
@@ -35,6 +36,7 @@ from src.evaluation.explainability import (
 from src.inference.artifacts import ModelArtifactMetadata, save_model_artifact
 from src.inference.predict import ChurnInferenceEngine
 from src.models.train import train_and_compare_models
+from src.monitoring.drift import DriftMonitor
 
 # Logging Configuration
 logging.basicConfig(
@@ -47,7 +49,7 @@ logger = logging.getLogger("churn_mlops_main")
 
 def load_config(config_path: str = "configs/config.yaml") -> dict:
     """Loads configuration from YAML file."""
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -136,7 +138,7 @@ def run_pipeline(config_path: str = "configs/config.yaml") -> None:
         n_repeats=5,
         random_state=cfg["project"]["random_state"],
     )
-    print("\n" + get_top_features_summary(df_importance, top_n=10) + "\n")
+    logger.info("\n%s\n", get_top_features_summary(df_importance, top_n=10))
 
     # 6. Secure Artifact Serialization & Governance
     logger.info("\n--- ARTIFACT SERIALIZATION & GOVERNANCE ---")
@@ -154,6 +156,7 @@ def run_pipeline(config_path: str = "configs/config.yaml") -> None:
             "max_projected_financial_benefit_usd": round(max_benefit, 2),
         },
         business_parameters=biz_cfg,
+        baseline_statistics=train_results.get("baseline_summary", {}),
     )
 
     p_path, m_path = save_model_artifact(
@@ -189,13 +192,93 @@ def run_pipeline(config_path: str = "configs/config.yaml") -> None:
     }
 
     pred_res = engine.predict_single(sample_customer)
-    logger.info("Real-Time Prediction for At-Risk Customer:\n%s", pred_res.model_dump_json(indent=2))
+    logger.info(
+        "Real-Time Prediction for At-Risk Customer:\n%s", pred_res.model_dump_json(indent=2)
+    )
 
     logger.info("\n=== MLOPS PIPELINE COMPLETED SUCCESSFULLY ===")
 
 
+def run_drift_evaluation(
+    current_data_path: str | None = None,
+    config_path: str = "configs/config.yaml",
+    output_report_dir: str = "reports/drift",
+) -> None:
+    """Evaluates data and feature drift on production payloads against training baseline."""
+    cfg = load_config(config_path)
+    logger.info("=== EVALUATING DATA AND FEATURE DRIFT ===")
+
+    raw_data_path = Path(cfg["data"]["raw_data_path"])
+    if not raw_data_path.exists():
+        logger.info(
+            "Reference raw dataset not found at %s. Generating baseline reference...", raw_data_path
+        )
+        ref_df = generate_synthetic_b2b_churn_data(
+            n_samples=cfg["data"]["synthetic"]["n_samples"],
+            churn_base_rate=cfg["data"]["synthetic"]["churn_rate"],
+            random_state=cfg["project"]["random_state"],
+        )
+        raw_data_path.parent.mkdir(parents=True, exist_ok=True)
+        ref_df.to_csv(raw_data_path, index=False)
+    else:
+        logger.info("Loading baseline reference dataset from %s", raw_data_path)
+        ref_df = pd.read_csv(raw_data_path)
+
+    # Load current dataset to evaluate
+    if current_data_path:
+        curr_path = Path(current_data_path)
+        logger.info("Loading current inference dataset from %s", curr_path)
+        curr_df = (
+            pd.read_parquet(curr_path) if curr_path.suffix == ".parquet" else pd.read_csv(curr_path)
+        )
+    else:
+        logger.info(
+            "No current input specified. Simulating shifted production batch for drift audit..."
+        )
+        curr_df = generate_synthetic_b2b_churn_data(
+            n_samples=800,
+            churn_base_rate=0.35,  # Shifted churn rate
+            random_state=999,
+        )
+        # Inject artificial distribution shifts
+        curr_df["nps_score"] = np.clip(curr_df["nps_score"] - 3.0, 0, 10)
+        curr_df["invoice_delay_days"] = curr_df["invoice_delay_days"] * 2.2
+        curr_df["support_tickets_count"] = curr_df["support_tickets_count"] + 5
+
+    num_cols = cfg["features"]["numeric_features"]
+    cat_cols = cfg["features"]["categorical_features"]
+
+    monitor = DriftMonitor(
+        reference_df=ref_df,
+        numeric_features=num_cols,
+        categorical_features=cat_cols,
+    )
+
+    report = monitor.evaluate_drift(curr_df)
+
+    out_dir = Path(output_report_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    report_file = out_dir / f"drift_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+    import json
+
+    with open(report_file, "w", encoding="utf-8") as f:
+        json.dump(report.to_dict(), f, indent=2)
+
+    logger.info("Drift audit completed. Report saved to: %s", report_file)
+    logger.info(
+        "Summary: Dataset Drifted = %s | Drifted Features = %d/%d (%s)",
+        report.is_dataset_drifted,
+        report.drifted_features_count,
+        report.total_features_evaluated,
+        ", ".join(report.drifted_features) if report.drifted_features else "None",
+    )
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Customer Churn MLOps Pipeline Runner & API Server")
+    parser = argparse.ArgumentParser(
+        description="Customer Churn MLOps Pipeline Runner & API Server"
+    )
     parser.add_argument(
         "--config",
         type=str,
@@ -206,6 +289,17 @@ if __name__ == "__main__":
         "--serve",
         action="store_true",
         help="Start the FastAPI REST inference microservice with Uvicorn",
+    )
+    parser.add_argument(
+        "--evaluate-drift",
+        action="store_true",
+        help="Evaluate feature and data drift against baseline dataset",
+    )
+    parser.add_argument(
+        "--input",
+        type=str,
+        default=None,
+        help="Path to input data (CSV/Parquet) for drift evaluation or batch inference",
     )
     parser.add_argument(
         "--host",
@@ -228,8 +322,14 @@ if __name__ == "__main__":
 
     if args.serve:
         import uvicorn
-        logger.info("Starting FastAPI Churn Inference Microservice on http://%s:%d ...", args.host, args.port)
+
+        logger.info(
+            "Starting FastAPI Churn Inference Microservice on http://%s:%d ...",
+            args.host,
+            args.port,
+        )
         uvicorn.run("src.api.app:app", host=args.host, port=args.port, reload=args.reload)
+    elif args.evaluate_drift:
+        run_drift_evaluation(current_data_path=args.input, config_path=args.config)
     else:
         run_pipeline(config_path=args.config)
-

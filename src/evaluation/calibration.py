@@ -43,8 +43,10 @@ def fit_calibrated_model(
     Returns:
         CalibratedClassifierCV: Fitted calibrated classifier.
     """
-    logger.info("Calibrating probabilities via CalibratedClassifierCV (method='%s', cv=%d)...", method, cv)
-    
+    logger.info(
+        "Calibrating probabilities via CalibratedClassifierCV (method='%s', cv=%d)...", method, cv
+    )
+
     calibrated_clf = CalibratedClassifierCV(
         estimator=estimator,
         method=method,

@@ -91,7 +91,7 @@ def save_model_artifact(
     # 4. Update 'latest' pointer for zero-downtime deployments
     latest_pipeline = out_path / f"{metadata.model_name}_latest.joblib"
     latest_metadata = out_path / f"{metadata.model_name}_latest_metadata.json"
-    
+
     joblib.dump(pipeline, latest_pipeline, compress=compress)
     with open(latest_metadata, "w", encoding="utf-8") as f:
         json.dump(metadata.model_dump(), f, indent=2)
@@ -122,7 +122,7 @@ def load_model_artifact(
     if metadata_path is not None:
         m_path = Path(metadata_path)
         if m_path.exists():
-            with open(m_path, "r", encoding="utf-8") as f:
+            with open(m_path, encoding="utf-8") as f:
                 meta_dict = json.load(f)
             loaded_metadata = ModelArtifactMetadata(**meta_dict)
 

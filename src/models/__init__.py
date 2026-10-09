@@ -1,4 +1,5 @@
 """Models package init."""
+
 from src.models.metrics import (
     b2b_churn_net_financial_benefit,
     calculate_financial_curve,
